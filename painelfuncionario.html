@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Localiza Aê — Painel do Funcionário</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+/* =====================================================
+   LOCALIZA AÊ — PAINEL DO FUNCIONÁRIO (arquivo único)
+   styles.css + admin-panel.css unificados
+   ===================================================== */
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== MODO CLARO (padrão) ===== */
+:root {
+  --blue:        #3B5BDB;
+  --blue-light:  #4C6EF5;
+  --blue-pale:   #EEF2FF;
+  --purple:      #7C3AED;
+  --purple-pale: #F3E8FF;
+  --gradient:    linear-gradient(135deg, #3B5BDB 0%, #7C3AED 100%);
+  --gradient2:   linear-gradient(135deg, #4C6EF5 0%, #9333EA 100%);
+  --success:     #10B981;
+  --danger:      #EF4444;
+  --warning:     #F59E0B;
+  --radius:      14px;
+
+  --bg:               #FFFFFF;
+  --bg-alt:           #F8F7FF;
+  --bg-card:          #FFFFFF;
+  --border:           #E2E0F0;
+  --ink:              #0F0A1E;
+  --muted:            #64748B;
+  --shadow:           0 4px 24px rgba(59,91,219,.10);
+  --shadow-lg:        0 16px 48px rgba(59,91,219,.16);
+  --shadow-xl:        0 32px 80px rgba(124,58,237,.18);
+  --nav-bg:           rgba(255,255,255,.92);
+  --nav-border:       rgba(226,224,240,.7);
+  --input-bg:         #F4F3FF;
+  --modal-overlay-bg: rgba(15,10,30,.55);
+  --scrollbar-thumb:  #C8C6DC;
+  --toggle-track:     #E2E0F0;
+  --toggle-knob:      #FFFFFF;
+}
+
+/* ===== MODO ESCURO ===== */
+[data-theme="dark"] {
+  --blue-pale:        rgba(59,91,219,.18);
+  --purple-pale:      rgba(124,58,237,.18);
+  --bg:               #0D0B18;
+  --bg-alt:           #13102A;
+  --bg-card:          #1A1730;
+  --border:           #2E2A4A;
+  --ink:              #F0EEFF;
+  --muted:            #8B85A8;
+  --shadow:           0 4px 24px rgba(0,0,0,.4);
+  --shadow-lg:        0 16px 48px rgba(0,0,0,.5);
+  --shadow-xl:        0 32px 80px rgba(0,0,0,.6);
+  --nav-bg:           rgba(13,11,24,.95);
+  --nav-border:       rgba(46,42,74,.8);
+  --input-bg:         #211D3A;
+  --modal-overlay-bg: rgba(0,0,0,.75);
+  --scrollbar-thumb:  #2E2A4A;
+  --toggle-track:     #3B5BDB;
+  --toggle-knob:      #FFFFFF;
+}
+
+/* ===== BASE ===== */
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--ink);
+  overflow-x: hidden;
+  transition: background .35s, color .35s;
+}
+h1,h2,h3,h4,h5 { font-family: 'Syne', sans-serif; }
+a { text-decoration: none; color: inherit; }
+img { display: block; max-width: 100%; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-alt); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+/* ===== BOTÕES (padrão do site) ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border-radius: 40px;
+  font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: .88rem;
+  cursor: pointer; transition: all .22s; border: none; outline: none;
+}
+.btn-ghost  { background: transparent; color: var(--blue); border: 1.5px solid var(--blue); }
+.btn-ghost:hover { background: var(--blue-pale); }
+.btn-primary { background: var(--gradient); color: #fff; box-shadow: 0 4px 16px rgba(124,58,237,.35); }
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(124,58,237,.45); transform: translateY(-1px); }
+
+/* ===== TOGGLE TEMA (idêntico ao site) ===== */
+.theme-toggle {
+  width: 48px; height: 27px; border-radius: 50px;
+  background: var(--toggle-track); border: none; cursor: pointer;
+  display: flex; align-items: center; padding: 3px;
+  transition: background .35s; flex-shrink: 0; outline: none;
+}
+.theme-toggle .t-knob {
+  width: 21px; height: 21px; border-radius: 50%;
+  background: var(--toggle-knob);
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+}
+[data-theme="dark"] .theme-toggle .t-knob { transform: translateX(21px); }
+.t-icon-sun  { display: block; }
+.t-icon-moon { display: none; }
+[data-theme="dark"] .t-icon-sun  { display: none; }
+[data-theme="dark"] .t-icon-moon { display: block; }
+
+/* ===== TOAST (idêntico ao site) ===== */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--gradient); color: #fff;
+  padding: 12px 28px; border-radius: 40px;
+  font-size: .88rem; font-weight: 600; z-index: 999;
+  opacity: 0; transition: all .3s;
+  box-shadow: 0 8px 32px rgba(124,58,237,.35);
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== MODAL OVERLAY (idêntico ao site) ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--modal-overlay-bg); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+/* =====================================================
+   TOPBAR (espelha .navbar do site)
+   ===================================================== */
+.ap-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 72px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: var(--nav-bg); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: var(--shadow);
+  transition: background .35s, border-color .35s;
+}
+.ap-topbar-left  { display: flex; align-items: center; gap: 16px; }
+.ap-topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.ap-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ap-logo img { height: 44px; object-fit: contain; }
+.ap-logo-fallback { display: flex; align-items: center; gap: 8px; }
+.ap-logo-text {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem;
+  background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.ap-divider    { width: 1px; height: 24px; background: var(--border); }
+.ap-page-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .92rem; color: var(--muted); }
+
+/* Chip do funcionário (visual .hero-badge do site) */
+.ap-employee {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px; border-radius: 40px;
+  border: 1.5px solid var(--border); background: var(--bg-card);
+  transition: background .35s, border-color .35s;
+}
+.ap-emp-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--gradient); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .75rem; flex-shrink: 0;
+}
+.ap-emp-info { display: flex; flex-direction: column; line-height: 1.2; }
+.ap-emp-info strong { font-size: .83rem; font-weight: 700; color: var(--ink); }
+.ap-emp-info span   { font-size: .7rem;  color: var(--muted); }
+
+/* =====================================================
+   LAYOUT PRINCIPAL
+   ===================================================== */
+.ap-layout {
+  display: grid; grid-template-columns: 272px 1fr;
+  min-height: 100vh; padding-top: 72px;
+}
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
+.ap-sidebar {
+  background: var(--bg-card); border-right: 1px solid var(--border);
+  position: sticky; top: 72px; height: calc(100vh - 72px);
+  overflow-y: auto; padding: 20px 14px;
+  display: flex; flex-direction: column; gap: 22px;
+  transition: background .35s, border-color .35s;
+}
+.ap-sidebar::-webkit-scrollbar { width: 4px; }
+.ap-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Card do funcionário — usa gradiente do site */
+.emp-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 14px; background: var(--gradient);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.emp-avatar-lg {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: rgba(255,255,255,.18); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1rem; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.32);
+}
+.emp-card-info strong { font-size: .92rem; font-weight: 700; color: #fff; display: block; }
+.emp-card-info span   { font-size: .74rem; color: rgba(255,255,255,.72); }
+
+.sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+.sidebar-label {
+  font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+  color: var(--muted); text-transform: uppercase; padding: 0 6px;
+}
+
+/* Select padrão */
+.ap-select {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: .88rem;
+  background: var(--input-bg); color: var(--ink);
+  outline: none; cursor: pointer;
+  transition: border-color .2s, background .35s;
+}
+.ap-select:focus { border-color: var(--blue); background: var(--bg-card); }
+.ap-select.sm    { width: auto; min-width: 130px; padding: 9px 12px; }
+
+/* Navegação da sidebar */
+.ap-nav { display: flex; flex-direction: column; gap: 3px; }
+.ap-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 12px; border-radius: 10px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: .88rem; font-weight: 500;
+  color: var(--muted); background: none; cursor: pointer; transition: all .2s; text-align: left;
+}
+.ap-nav-item:hover  { background: var(--bg-alt); color: var(--ink); }
+.ap-nav-item.active { background: var(--blue-pale); color: var(--blue); font-weight: 600; }
+.ap-nav-item span:first-child { font-size: 1.05rem; flex-shrink: 0; }
+.ap-nav-count {
+  margin-left: auto; background: var(--gradient); color: #fff;
+  font-size: .68rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; min-width: 22px; text-align: center;
+}
+
+/* Stats da sidebar */
+.sidebar-stats { display: flex; flex-direction: column; gap: 4px; }
+.ss-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; border-radius: 8px;
+  font-size: .82rem; background: var(--bg-alt); transition: background .35s;
+}
+.ss-row span   { color: var(--muted); }
+.ss-row strong { font-weight: 700; }
+
+/* =====================================================
+   MAIN CONTENT
+   ===================================================== */
+.ap-main { background: var(--bg-alt); min-height: calc(100vh - 72px); transition: background .35s; }
+.ap-view { padding: 32px 36px 64px; }
+
+.view-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.view-title { font-size: 1.75rem; font-weight: 800; color: var(--ink); }
+.view-sub   { font-size: .9rem; color: var(--muted); margin-top: 4px; }
+
+/* Badge do funcionário no cabeçalho do form — usa .hero-badge do site */
+.employee-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  padding: 7px 16px; border-radius: 40px;
+  font-size: .83rem; font-weight: 600; color: var(--purple);
+  box-shadow: var(--shadow); transition: background .35s, border-color .35s;
+}
+
+/* =====================================================
+   FORMULÁRIO
+   ===================================================== */
+.form-card {
+  background: var(--bg-card); border-radius: 20px;
+  border: 1.5px solid var(--border); box-shadow: var(--shadow);
+  overflow: hidden; transition: background .35s, border-color .35s;
+}
+.form-section {
+  padding: 28px 32px; border-bottom: 1px solid var(--border); transition: border-color .35s;
+}
+.form-section:last-of-type { border-bottom: none; }
+.form-section-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1rem; font-weight: 700; margin-bottom: 20px; color: var(--ink);
+}
+.fs-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; font-weight: 800; font-family: 'Syne', sans-serif; flex-shrink: 0;
+}
+.fs-icon.s1 { background: var(--blue-pale);            color: var(--blue);    }
+.fs-icon.s2 { background: var(--purple-pale);          color: var(--purple);  }
+.fs-icon.s3 { background: rgba(16,185,129,.12);        color: var(--success); }
+.fs-icon.s4 { background: rgba(245,158,11,.12);        color: var(--warning); }
+.fs-icon.s5 { background: var(--blue-pale);            color: var(--blue);    }
+
+/* Seletor de tipo */
+.type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.type-opt {
+  border: 2px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: all .25s; overflow: hidden;
+}
+.type-opt input[type="radio"] { display: none; }
+.type-opt-inner {
+  padding: 20px 16px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.type-emoji { font-size: 2.2rem; margin-bottom: 4px; }
+.type-opt-inner strong { font-size: .95rem; font-weight: 700; color: var(--ink); }
+.type-opt-inner p      { font-size: .78rem; color: var(--muted); }
+.type-opt:hover:not(.sel-lost):not(.sel-found) { border-color: var(--blue); transform: translateY(-2px); }
+.sel-lost  { border-color: var(--danger);  background: rgba(239,68,68,.05);  box-shadow: 0 0 0 3px rgba(239,68,68,.12);  }
+.sel-found { border-color: var(--success); background: rgba(16,185,129,.05); box-shadow: 0 0 0 3px rgba(16,185,129,.12); }
+
+/* Grid do formulário */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: .82rem; font-weight: 600; color: var(--ink); }
+.req  { color: var(--danger); }
+.form-hint { font-size: .74rem; color: var(--muted); }
+
+/* Inputs — padrão idêntico ao site */
+.form-input {
+  padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  outline: none; font-family: 'DM Sans', sans-serif; font-size: .92rem;
+  background: var(--input-bg); color: var(--ink); width: 100%;
+  transition: border-color .2s, background .35s;
+}
+.form-input:focus     { border-color: var(--blue); background: var(--bg-card); }
+.form-input[readonly] { opacity: .6; cursor: not-allowed; }
+textarea.form-input   { resize: vertical; min-height: 90px; }
+
+/* Ações do formulário */
+.form-actions {
+  padding: 20px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--bg-alt); flex-wrap: wrap;
+  border-top: 1px solid var(--border); transition: background .35s;
+}
+
+/* =====================================================
+   FILTROS DA LISTAGEM
+   ===================================================== */
+.list-filters {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 16px; align-items: center;
+}
+.search-field {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; min-width: 220px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 9px 14px;
+  transition: border-color .2s, background .35s;
+}
+.search-field:focus-within { border-color: var(--blue); }
+.search-field input {
+  border: none; outline: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: .88rem;
+  color: var(--ink); width: 100%;
+}
+.search-field input::placeholder { color: var(--muted); }
+.objects-count { font-size: .85rem; color: var(--muted); margin-bottom: 16px; }
+
+/* =====================================================
+   GRADE DE OBJETOS (espelha .items-grid + .item-card)
+   ===================================================== */
+.objects-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 20px;
+}
+.obj-card {
+  background: var(--bg-card); border-radius: 20px;
+  border: 1.5px solid var(--border); overflow: hidden;
+  transition: all .25s; cursor: pointer;
+}
+.obj-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); border-color: transparent; }
+
+.obj-thumb {
+  height: 156px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; overflow: hidden;
+}
+.obj-thumb-bg    { position: absolute; inset: 0; }
+.obj-thumb-emoji { position: relative; z-index: 1; }
+
+.obj-type-badge {
+  position: absolute; top: 12px; left: 12px;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+}
+.badge-lost  { background: rgba(239,68,68,.14);  color: var(--danger);  border: 1px solid rgba(239,68,68,.28);  }
+.badge-found { background: rgba(16,185,129,.14); color: var(--success); border: 1px solid rgba(16,185,129,.28); }
+
+.obj-priority {
+  position: absolute; top: 12px; right: 12px;
+  font-size: .7rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; background: var(--bg-card); color: var(--ink); opacity: .92;
+}
+.obj-body    { padding: 18px; }
+.obj-body h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+.obj-meta {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  font-size: .78rem; color: var(--muted); margin-bottom: 12px;
+}
+.obj-meta span { display: flex; align-items: center; gap: 3px; }
+.obj-tags      { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Tag — idêntica ao .tag do site */
+.obj-tag {
+  padding: 4px 12px; border-radius: 20px;
+  font-size: .74rem; font-weight: 500;
+  background: var(--blue-pale); color: var(--blue); transition: background .35s;
+}
+.obj-footer {
+  padding: 12px 18px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  transition: border-color .35s;
+}
+.obj-employee { display: flex; align-items: center; gap: 7px; font-size: .78rem; color: var(--muted); }
+.obj-emp-av {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--gradient); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .62rem; font-weight: 700; flex-shrink: 0;
+}
+
+/* ===== STATUS PILLS ===== */
+.status-pill       { padding: 4px 12px; border-radius: 20px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+.status-pendente   { background: rgba(245,158,11,.12); color: var(--warning); border: 1px solid rgba(245,158,11,.3);  }
+.status-ativo      { background: var(--blue-pale);    color: var(--blue);    border: 1px solid rgba(59,91,219,.25);  }
+.status-em_analise { background: var(--purple-pale);  color: var(--purple);  border: 1px solid rgba(124,58,237,.25); }
+.status-resolvido  { background: rgba(16,185,129,.12);color: var(--success); border: 1px solid rgba(16,185,129,.3);  }
+
+/* ===== EMPTY STATE ===== */
+.empty-state    { text-align: center; padding: 80px 20px; }
+.empty-state h3 { font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; font-family: 'Syne', sans-serif; }
+.empty-state p  { font-size: .92rem; color: var(--muted); }
+
+/* =====================================================
+   MODAL DE DETALHES
+   ===================================================== */
+.detail-card {
+  background: var(--bg-card); border-radius: 24px;
+  width: 100%; max-width: 620px;
+  transform: translateY(20px) scale(.97);
+  transition: transform .3s, background .35s;
+  box-shadow: var(--shadow-xl); border: 1px solid var(--border);
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.open .detail-card { transform: translateY(0) scale(1); }
+
+.dc-header {
+  padding: 22px 26px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  position: sticky; top: 0; background: var(--bg-card); z-index: 1; transition: background .35s;
+}
+.dc-type-badge { margin-bottom: 6px; }
+.dc-title { font-size: 1.3rem; font-weight: 800; color: var(--ink); font-family: 'Syne', sans-serif; }
+.dc-close {
+  background: var(--bg-alt); border: none; width: 34px; height: 34px;
+  border-radius: 50%; cursor: pointer; font-size: .9rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); transition: background .2s; flex-shrink: 0; margin-top: 4px;
+}
+.dc-close:hover { background: var(--border); }
+
+.dc-body { padding: 24px 26px; }
+.dc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dc-field { display: flex; flex-direction: column; gap: 4px; }
+.dc-field.full { grid-column: 1 / -1; }
+.dc-field label {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--muted);
+}
+.dc-field span { font-size: .9rem; font-weight: 500; color: var(--ink); line-height: 1.5; }
+
+.dc-footer {
+  padding: 16px 26px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: var(--bg-alt); transition: background .35s;
+}
+.dc-status-wrap { display: flex; align-items: center; gap: 8px; }
+.dc-status-wrap label { font-size: .8rem; font-weight: 600; color: var(--muted); }
+
+/* =====================================================
+   RESPONSIVO
+   ===================================================== */
+@media (max-width: 1024px) { .ap-layout { grid-template-columns: 240px 1fr; } }
+@media (max-width: 768px) {
+  .ap-topbar  { padding: 0 16px; }
+  .ap-page-label { display: none; }
+  .ap-layout  { grid-template-columns: 1fr; }
+  .ap-sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .ap-view    { padding: 20px 16px 48px; }
+  .form-section  { padding: 20px 16px; }
+  .form-grid     { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: 1; }
+  .type-selector   { grid-template-columns: 1fr 1fr; }
+  .form-actions    { padding: 16px; flex-direction: column; align-items: stretch; }
+  .dc-grid { grid-template-columns: 1fr; }
+  .dc-field.full { grid-column: 1; }
+  .objects-grid  { grid-template-columns: 1fr; }
+  .ap-employee .ap-emp-info { display: none; }
+}
+@media (max-width: 480px) {
+  .ap-topbar-right .btn { display: none; }
+  .type-selector { grid-template-columns: 1fr; }
+  .list-filters  { flex-direction: column; }
+  .ap-select.sm  { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     TOPBAR
+===================================================== -->
+<header class="ap-topbar">
+  <div class="ap-topbar-left">
+    <a class="ap-logo" href="index.html" title="Voltar ao site">
+      <img src="localizae-removebg-preview.png" alt="Localiza Aê"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+      <div class="ap-logo-fallback" style="display:none">
+        <span style="font-size:1.4rem">📍</span>
+        <span class="ap-logo-text">Localiza Aê</span>
+      </div>
+    </a>
+    <div class="ap-divider"></div>
+    <span class="ap-page-label">Painel do Funcionário</span>
+  </div>
+
+  <div class="ap-topbar-right">
+    <div class="ap-employee">
+      <div class="ap-emp-avatar" id="emp-avatar">?</div>
+      <div class="ap-emp-info">
+        <strong id="emp-name-display">Nenhum selecionado</strong>
+        <span   id="emp-role-display">—</span>
+      </div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Modo claro / escuro">
+      <span class="t-knob">
+        <span class="t-icon-sun">☀️</span>
+        <span class="t-icon-moon">🌙</span>
+      </span>
+    </button>
+    <a href="index.html" class="btn btn-ghost" style="padding:9px 20px;font-size:.85rem">← Ver site</a>
+  </div>
+</header>
+
+<!-- =====================================================
+     LAYOUT
+===================================================== -->
+<div class="ap-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="ap-sidebar">
+    <div class="emp-card">
+      <div class="emp-avatar-lg" id="emp-avatar-lg">?</div>
+      <div class="emp-card-info">
+        <strong id="emp-card-name">Selecionar</strong>
+        <span   id="emp-card-role">funcionário</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Funcionário ativo</div>
+      <select class="ap-select" id="employee-select" onchange="selectEmployee(this.value)">
+        <option value="">— Selecione —</option>
+        <option value="Ana Lima|Recepcionista">Ana Lima — Recepcionista</option>
+        <option value="Bruno Costa|Atendente">Bruno Costa — Atendente</option>
+        <option value="Carla Souza|Supervisora">Carla Souza — Supervisora</option>
+        <option value="Diego Ferreira|Atendente">Diego Ferreira — Atendente</option>
+        <option value="Elisa Martins|Coordenadora">Elisa Martins — Coordenadora</option>
+      </select>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu</div>
+      <nav class="ap-nav">
+        <button class="ap-nav-item active" id="nav-cadastro" onclick="showView('cadastro')">
+          <span>📝</span> Cadastrar Objeto
+        </button>
+        <button class="ap-nav-item" id="nav-lista" onclick="showView('lista')">
+          <span>📦</span> Todos os Objetos
+          <span class="ap-nav-count" id="list-count">0</span>
+        </button>
+        <button class="ap-nav-item" id="nav-meus" onclick="showView('meus')">
+          <span>👤</span> Meus Cadastros
+          <span class="ap-nav-count" id="my-count">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resumo geral</div>
+      <div class="sidebar-stats">
+        <div class="ss-row"><span>Total</span>      <strong id="stat-total">0</strong></div>
+        <div class="ss-row"><span>Perdidos</span>   <strong id="stat-lost"     style="color:var(--danger)">0</strong></div>
+        <div class="ss-row"><span>Encontrados</span><strong id="stat-found"    style="color:var(--success)">0</strong></div>
+        <div class="ss-row"><span>Resolvidos</span> <strong id="stat-resolved" style="color:var(--purple)">0</strong></div>
+        <div class="ss-row"><span>Pendentes</span>  <strong id="stat-pending"  style="color:var(--warning)">0</strong></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="ap-main">
+
+    <!-- VIEW: CADASTRAR -->
+    <div id="view-cadastro" class="ap-view">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Cadastrar Objeto</h2>
+          <p class="view-sub">Preencha as informações do objeto perdido ou encontrado</p>
+        </div>
+        <div class="employee-badge" id="form-employee-badge">
+          <span>👤</span><span id="form-emp-name">Nenhum funcionário selecionado</span>
+        </div>
+      </div>
+
+      <div class="form-card">
+
+        <!-- ETAPA 1 -->
+        <div class="form-section">
+          <h3 class="form-section-title"><span class="fs-icon s1">1</span>Tipo de Registro</h3>
+          <div class="type-selector">
+            <label class="type-opt sel-lost" id="opt-lost">
+              <input type="radio" name="tipo" value="Perdido" checked onchange="setType('Perdido')"/>
+              <div class="type-opt-inner"><span class="type-emoji">😢</span><strong>Objeto Perdido</strong><p>Alguém perdeu este objeto</p></div>
+            </label>
+            <label class="type-opt" id="opt-found">
+              <input type="radio" name="tipo" value="Encontrado" onchange="setType('Encontrado')"/>
+              <div class="type-opt-inner"><span class="type-emoji">😊</span><strong>Objeto Encontrado</strong><p>Este objeto foi achado</p></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- ETAPA 2 -->
+        <div class="form-section">
+          <h3 class="form-section-title"><span class="fs-icon s2">2</span>Identificação do Objeto</h3>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Nome do objeto <span class="req">*</span></label>
+              <input id="f-name" class="form-input" type="text" placeholder="Ex: Carteira preta de couro com zíper dourado"/>
+            </div>
+            <div class="form-group">
+              <label>Categoria <span class="req">*</span></label>
+              <select id="f-cat" class="form-input">
+                <option value="">Selecione...</option>
+                <option value="Documentos">🪪 Documentos</option>
+                <option value="Eletrônicos">📱 Eletrônicos</option>
+                <option value="Chaves">🔑 Chaves</option>
+                <option value="Carteiras">👛 Carteiras</option>
+                <option value="Roupas">👕 Roupas</option>
+                <option value="Animais">🐾 Animais</option>
+                <option value="Bolsas">👜 Bolsas</option>
+                <option value="Joias">💍 Joias</option>
+                <option value="Outros">📦 Outros</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Cor principal</label>
+              <input id="f-color" class="form-input" type="text" placeholder="Ex: Preto, Azul, Vermelho..."/>
+            </div>
+            <div class="form-group">
+              <label>Marca / Modelo</label>
+              <input id="f-brand" class="form-input" type="text" placeholder="Ex: Samsung, Nike, Sem marca..."/>
+            </div>
+            <div class="form-group">
+              <label>Estado de conservação</label>
+              <select id="f-condition" class="form-input">
+                <option value="Bom">✅ Bom estado</option>
+                <option value="Regular">⚠️ Estado regular</option>
+                <option value="Danificado">❌ Danificado</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Tags / Palavras-chave</label>
+              <input id="f-tags" class="form-input" type="text" placeholder="Ex: couro, zíper dourado, RG (separe por vírgula)"/>
+              <span class="form-hint">Facilita a busca pelo objeto na plataforma</span>
+            </div>
+            <div class="form-group full">
+              <label>Descrição detalhada <span class="req">*</span></label>
+              <textarea id="f-desc" class="form-input" rows="4" placeholder="Descreva com o máximo de detalhes: características únicas, conteúdo, sinais de identificação..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ETAPA 3 -->
+        <div class="form-section">
+          <h3 class="form-section-title"><span class="fs-icon s3">3</span>Local e Data</h3>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Local onde foi <span id="local-label">perdido</span> <span class="req">*</span></label>
+              <input id="f-location" class="form-input" type="text" placeholder="Ex: Shopping Barra, Salvador - BA / Rua das Flores, 123"/>
+            </div>
+            <div class="form-group">
+              <label>Ponto de referência</label>
+              <input id="f-ref" class="form-input" type="text" placeholder="Ex: Perto da entrada principal, 2º andar..."/>
+            </div>
+            <div class="form-group">
+              <label>Cidade / UF</label>
+              <input id="f-city" class="form-input" type="text" placeholder="Ex: Salvador - BA"/>
+            </div>
+            <div class="form-group">
+              <label>Data <span class="req">*</span></label>
+              <input id="f-date" class="form-input" type="date"/>
+            </div>
+            <div class="form-group">
+              <label>Horário aproximado</label>
+              <input id="f-time" class="form-input" type="time"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- ETAPA 4 -->
+        <div class="form-section">
+          <h3 class="form-section-title"><span class="fs-icon s4">4</span>Dados do Solicitante</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nome completo <span class="req">*</span></label>
+              <input id="f-requester" class="form-input" type="text" placeholder="Nome de quem está solicitando"/>
+            </div>
+            <div class="form-group">
+              <label>CPF / Documento</label>
+              <input id="f-cpf" class="form-input" type="text" placeholder="000.000.000-00"/>
+            </div>
+            <div class="form-group">
+              <label>Telefone / WhatsApp <span class="req">*</span></label>
+              <input id="f-phone" class="form-input" type="tel" placeholder="(71) 99999-9999"/>
+            </div>
+            <div class="form-group">
+              <label>E-mail</label>
+              <input id="f-email" class="form-input" type="email" placeholder="email@exemplo.com"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- ETAPA 5 -->
+        <div class="form-section">
+          <h3 class="form-section-title"><span class="fs-icon s5">5</span>Status e Responsável</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Status inicial <span class="req">*</span></label>
+              <select id="f-status" class="form-input">
+                <option value="pendente">⏳ Pendente — aguardando análise</option>
+                <option value="ativo" selected>✔️ Ativo — em busca</option>
+                <option value="em_analise">🔍 Em análise</option>
+                <option value="resolvido">✅ Resolvido — devolvido</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Prioridade</label>
+              <select id="f-priority" class="form-input">
+                <option value="normal">🟡 Normal</option>
+                <option value="alta">🔴 Alta</option>
+                <option value="baixa">🟢 Baixa</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Funcionário responsável</label>
+              <input id="f-employee" class="form-input" type="text" readonly placeholder="Selecione o funcionário no menu lateral"/>
+            </div>
+            <div class="form-group">
+              <label>Data e hora do cadastro</label>
+              <input id="f-timestamp" class="form-input" type="text" readonly/>
+            </div>
+            <div class="form-group full">
+              <label>Observações internas</label>
+              <textarea id="f-obs" class="form-input" rows="3" placeholder="Informações adicionais apenas para a equipe — não visível ao público..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- AÇÕES -->
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="clearForm()" type="button">🗑️ Limpar formulário</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" style="background:var(--warning);color:#fff;box-shadow:0 4px 14px rgba(245,158,11,.3)"
+              onclick="saveForm('pendente')" type="button">⏳ Salvar como Pendente</button>
+            <button class="btn btn-primary" onclick="saveForm(null)" type="button">💾 Cadastrar Objeto</button>
+          </div>
+        </div>
+
+      </div><!-- /form-card -->
+    </div><!-- /view-cadastro -->
+
+    <!-- VIEW: TODOS OS OBJETOS -->
+    <div id="view-lista" class="ap-view" style="display:none">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Todos os Objetos</h2>
+          <p class="view-sub">Registros de toda a equipe na plataforma</p>
+        </div>
+        <button class="btn btn-primary" onclick="showView('cadastro')">+ Novo Cadastro</button>
+      </div>
+      <div class="list-filters">
+        <div class="search-field">
+          <span>🔍</span>
+          <input type="text" id="search-all" placeholder="Buscar por nome, local, solicitante, funcionário..." oninput="renderAllList()"/>
+        </div>
+        <select class="ap-select sm" id="fil-type" onchange="renderAllList()">
+          <option value="">Todos os tipos</option>
+          <option value="Perdido">😢 Perdidos</option>
+          <option value="Encontrado">😊 Encontrados</option>
+        </select>
+        <select class="ap-select sm" id="fil-cat" onchange="renderAllList()">
+          <option value="">Todas categorias</option>
+          <option>Documentos</option><option>Eletrônicos</option><option>Chaves</option>
+          <option>Carteiras</option><option>Roupas</option><option>Animais</option>
+          <option>Bolsas</option><option>Joias</option><option>Outros</option>
+        </select>
+        <select class="ap-select sm" id="fil-status" onchange="renderAllList()">
+          <option value="">Todos os status</option>
+          <option value="pendente">⏳ Pendente</option>
+          <option value="ativo">✔️ Ativo</option>
+          <option value="em_analise">🔍 Em análise</option>
+          <option value="resolvido">✅ Resolvido</option>
+        </select>
+        <button class="btn btn-ghost" style="padding:9px 16px;font-size:.83rem" onclick="clearListFilters()">✕ Limpar</button>
+      </div>
+      <p class="objects-count" id="all-count-label">0 registros encontrados</p>
+      <div class="objects-grid" id="list-all-grid"></div>
+      <div class="empty-state" id="list-empty" style="display:none">
+        <div style="font-size:3.5rem;margin-bottom:12px">📭</div>
+        <h3>Nenhum objeto encontrado</h3>
+        <p>Ajuste os filtros ou cadastre um novo objeto.</p>
+        <button class="btn btn-primary" onclick="showView('cadastro')" style="margin-top:18px">+ Cadastrar Objeto</button>
+      </div>
+    </div><!-- /view-lista -->
+
+    <!-- VIEW: MEUS CADASTROS -->
+    <div id="view-meus" class="ap-view" style="display:none">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Meus Cadastros</h2>
+          <p class="view-sub" id="my-sub">Selecione um funcionário no menu lateral</p>
+        </div>
+        <button class="btn btn-primary" onclick="showView('cadastro')">+ Novo Cadastro</button>
+      </div>
+      <p class="objects-count" id="my-count-label">0 registros</p>
+      <div class="objects-grid" id="list-my-grid"></div>
+      <div class="empty-state" id="my-empty" style="display:none">
+        <div style="font-size:3.5rem;margin-bottom:12px">👤</div>
+        <h3>Nenhum cadastro ainda</h3>
+        <p>Selecione um funcionário ou cadastre um novo objeto.</p>
+        <button class="btn btn-primary" onclick="showView('cadastro')" style="margin-top:18px">+ Cadastrar Objeto</button>
+      </div>
+    </div><!-- /view-meus -->
+
+  </main>
+</div><!-- /ap-layout -->
+
+<!-- MODAL DE DETALHES -->
+<div class="modal-overlay" id="detail-overlay" onclick="closeDetailOverlay(event)">
+  <div class="detail-card">
+    <div class="dc-header">
+      <div>
+        <div class="dc-type-badge" id="dc-type-badge"></div>
+        <h2 class="dc-title" id="dc-title">—</h2>
+      </div>
+      <button class="dc-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dc-body" id="dc-body"></div>
+    <div class="dc-footer">
+      <div class="dc-status-wrap">
+        <label>Atualizar status:</label>
+        <select class="ap-select sm" id="dc-status-sel" onchange="updateStatus(this.value)">
+          <option value="pendente">⏳ Pendente</option>
+          <option value="ativo">✔️ Ativo</option>
+          <option value="em_analise">🔍 Em análise</option>
+          <option value="resolvido">✅ Resolvido</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="padding:9px 18px;font-size:.85rem" onclick="closeDetail()">Fechar</button>
+        <button class="btn" style="background:var(--danger);color:#fff;padding:9px 18px;font-size:.85rem;box-shadow:0 4px 12px rgba(239,68,68,.3)"
+          onclick="deleteCurrentItem()">🗑️ Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   LOCALIZA AÊ — admin-panel.js (embutido)
+   ===================================================== */
+
+const STORAGE_KEY = 'lz_ae_objects';
+const THEME_KEY   = 'lz_ae_theme';
+
+let currentEmployee = null;
+let currentItemId   = null;
+let currentType     = 'Perdido';
+
+const EMOJI_MAP = {
+  Documentos:'🪪', Eletrônicos:'📱', Chaves:'🔑', Carteiras:'👛',
+  Roupas:'👕', Animais:'🐾', Bolsas:'👜', Joias:'💍', Outros:'📦'
+};
+const COLOR_MAP = { Perdido:'#3B5BDB', Encontrado:'#10B981' };
+const STATUS_LABEL = {
+  pendente:'⏳ Pendente', ativo:'✔️ Ativo',
+  em_analise:'🔍 Em análise', resolvido:'✅ Resolvido'
+};
+const PRIORITY_LABEL = { normal:'🟡 Normal', alta:'🔴 Alta', baixa:'🟢 Baixa' };
+
+const SEED = [
+  { id:1001, type:'Perdido',    name:'Carteira preta de couro',     cat:'Carteiras',   color:'Preto',   brand:'Sem marca', condition:'Bom',     location:'Aeroporto de Congonhas, SP',   city:'São Paulo - SP',      ref:'Portão B12',         date:'15/03/2025', time:'14:30', requester:'João Alves',   phone:'(11) 98877-0011', email:'joao@mail.com',  tags:['RG','CNH','cartões'],           desc:'Carteira de couro preto com zíper dourado contendo RG, CNH e três cartões de crédito.', obs:'Cliente muito ansioso. Ligar assim que localizar.', employee:'Ana Lima',       employeeRole:'Recepcionista', status:'ativo',      priority:'alta',   timestamp:'15/03/2025 09:14' },
+  { id:1002, type:'Encontrado', name:'iPhone 13 Pro tela trincada', cat:'Eletrônicos', color:'Grafite', brand:'Apple',     condition:'Regular', location:'Metrô Paulista, SP',           city:'São Paulo - SP',      ref:'Dentro do vagão',    date:'16/03/2025', time:'08:00', requester:'Maria Costa',  phone:'(11) 97766-0022', email:'maria@mail.com', tags:['Apple','Preto','iPhone'],        desc:'iPhone com tela rachada encontrado no banco do metrô na linha 2.', obs:'', employee:'Bruno Costa',      employeeRole:'Atendente',     status:'pendente',   priority:'normal', timestamp:'16/03/2025 10:32' },
+  { id:1003, type:'Perdido',    name:'Chave Honda Civic 2022',      cat:'Chaves',      color:'Preto',   brand:'Honda',     condition:'Bom',     location:'Shopping Recife, PE',          city:'Recife - PE',         ref:'Piso L3',            date:'14/03/2025', time:'16:45', requester:'Pedro Lima',   phone:'(81) 96655-0033', email:'pedro@mail.com', tags:['Honda','Civic','chaveiro azul'], desc:'Chave com controle remoto e chaveiro de borracha azul.', obs:'', employee:'Carla Souza',       employeeRole:'Supervisora',   status:'em_analise', priority:'alta',   timestamp:'14/03/2025 17:01' },
+  { id:1004, type:'Encontrado', name:'Mochila Nike preta',          cat:'Bolsas',      color:'Preto',   brand:'Nike',      condition:'Bom',     location:'Parque Ibirapuera, SP',        city:'São Paulo - SP',      ref:'Perto do lago',      date:'17/03/2025', time:'07:30', requester:'Marina Silva', phone:'(11) 95544-0044', email:'marina@mail.com',tags:['Nike','Cadernos','livros'],       desc:'Mochila com cadernos de faculdade e um livro de cálculo.', obs:'Pertences entregues à segurança do parque.', employee:'Ana Lima', employeeRole:'Recepcionista', status:'resolvido',  priority:'baixa',  timestamp:'17/03/2025 08:45' },
+  { id:1005, type:'Perdido',    name:'Cachorro Pug chamado Toby',   cat:'Animais',     color:'Bege',    brand:'—',         condition:'Bom',     location:'Jardim Botânico, RJ',          city:'Rio de Janeiro - RJ', ref:'Portão Norte',       date:'17/03/2025', time:'15:00', requester:'Julia Ramos',  phone:'(21) 94433-0055', email:'julia@mail.com', tags:['Pug','coleira vermelha'],        desc:'Pug bege macho chamado Toby, usa coleira vermelha com plaquinha. Muito dócil.', obs:'Dona está desesperada. Prioridade máxima.', employee:'Diego Ferreira', employeeRole:'Atendente',    status:'ativo',      priority:'alta',   timestamp:'17/03/2025 15:22' },
+  { id:1006, type:'Encontrado', name:'Óculos grau armação azul',    cat:'Outros',      color:'Azul',    brand:'Ray-Ban',   condition:'Bom',     location:'UFBA, Salvador - BA',          city:'Salvador - BA',       ref:'Biblioteca central', date:'13/03/2025', time:'12:00', requester:'Lucas Torres', phone:'(71) 93322-0066', email:'lucas@mail.com', tags:['Óculos','grau','azul'],          desc:'Óculos com armação azul escura encontrado na biblioteca da universidade.', obs:'Entregue à secretaria.', employee:'Elisa Martins', employeeRole:'Coordenadora', status:'resolvido',  priority:'normal', timestamp:'13/03/2025 13:05' },
+];
+
+function loadObjects() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  return raw ? JSON.parse(raw) : [...SEED];
+}
+function saveObjects(objs) { localStorage.setItem(STORAGE_KEY, JSON.stringify(objs)); }
+
+let objects = loadObjects();
+
+/* ----- TEMA ----- */
+function toggleTheme() {
+  const next = (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem(THEME_KEY, next);
+}
+
+/* ----- FUNCIONÁRIO ----- */
+function selectEmployee(val) {
+  if (!val) { currentEmployee = null; updateEmployeeUI(null); return; }
+  const [name, role] = val.split('|');
+  currentEmployee = { name, role };
+  updateEmployeeUI(currentEmployee);
+  document.getElementById('f-employee').value = `${name} — ${role}`;
+  renderMyList(); updateStats();
+  showToast(`👤 Funcionário ativo: ${name}`);
+}
+function updateEmployeeUI(emp) {
+  const initials = emp ? emp.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '?';
+  ['emp-avatar','emp-avatar-lg'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=initials; });
+  document.getElementById('emp-name-display').textContent = emp ? emp.name  : 'Nenhum selecionado';
+  document.getElementById('emp-role-display').textContent = emp ? emp.role  : '—';
+  document.getElementById('emp-card-name').textContent    = emp ? emp.name  : 'Selecionar';
+  document.getElementById('emp-card-role').textContent    = emp ? emp.role  : 'funcionário';
+  document.getElementById('form-emp-name').textContent    = emp ? `${emp.name} — ${emp.role}` : 'Nenhum funcionário selecionado';
+  document.getElementById('my-sub').textContent = emp ? `Registros cadastrados por ${emp.name}` : 'Selecione um funcionário no menu lateral';
+}
+
+/* ----- VIEWS ----- */
+function showView(name) {
+  ['cadastro','lista','meus'].forEach(v => {
+    document.getElementById(`view-${v}`).style.display = v===name ? 'block' : 'none';
+    document.getElementById(`nav-${v}`).classList.toggle('active', v===name);
+  });
+  if (name==='lista') renderAllList();
+  if (name==='meus')  renderMyList();
+}
+
+/* ----- TIPO ----- */
+function setType(type) {
+  currentType = type;
+  document.getElementById('opt-lost').classList.toggle('sel-lost',   type==='Perdido');
+  document.getElementById('opt-found').classList.toggle('sel-found', type==='Encontrado');
+  document.getElementById('local-label').textContent = type==='Perdido' ? 'perdido' : 'encontrado';
+}
+
+/* ----- FORM ----- */
+function clearForm() {
+  ['f-name','f-color','f-brand','f-tags','f-desc','f-location','f-ref','f-city',
+   'f-time','f-requester','f-cpf','f-phone','f-email','f-obs'].forEach(id => {
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  ['f-cat','f-condition','f-status','f-priority'].forEach(id => {
+    const el=document.getElementById(id); if(el) el.selectedIndex=0;
+  });
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  setType('Perdido');
+  document.querySelector('input[name="tipo"][value="Perdido"]').checked = true;
+  showToast('🗑️ Formulário limpo.');
+}
+
+function saveForm(forceStatus) {
+  const name      = document.getElementById('f-name').value.trim();
+  const location  = document.getElementById('f-location').value.trim();
+  const requester = document.getElementById('f-requester').value.trim();
+  const phone     = document.getElementById('f-phone').value.trim();
+  const cat       = document.getElementById('f-cat').value;
+  if (!name)           { showToast('⚠️ Informe o nome do objeto.');          return; }
+  if (!cat)            { showToast('⚠️ Selecione a categoria.');             return; }
+  if (!location)       { showToast('⚠️ Informe o local.');                   return; }
+  if (!requester)      { showToast('⚠️ Informe o nome do solicitante.');     return; }
+  if (!phone)          { showToast('⚠️ Informe o telefone do solicitante.'); return; }
+  if (!currentEmployee){ showToast('⚠️ Selecione o funcionário no menu lateral.'); return; }
+
+  const dateRaw = document.getElementById('f-date').value;
+  const d       = dateRaw ? new Date(dateRaw) : new Date();
+  const dateStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  const now     = new Date();
+  const ts      = `${dateStr} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const tagsRaw = document.getElementById('f-tags').value;
+  const tags    = tagsRaw ? tagsRaw.split(',').map(t=>t.trim()).filter(Boolean) : [cat];
+
+  objects.unshift({
+    id: Date.now(), type: currentType, name, cat,
+    color:        document.getElementById('f-color').value.trim()  || '—',
+    brand:        document.getElementById('f-brand').value.trim()  || '—',
+    condition:    document.getElementById('f-condition').value,
+    location, city: document.getElementById('f-city').value.trim() || '—',
+    ref:          document.getElementById('f-ref').value.trim()    || '—',
+    date: dateStr, time: document.getElementById('f-time').value   || '—',
+    requester, cpf: document.getElementById('f-cpf').value.trim()  || '—',
+    phone, email: document.getElementById('f-email').value.trim()  || '—',
+    tags, desc:   document.getElementById('f-desc').value.trim()   || '—',
+    obs:          document.getElementById('f-obs').value.trim()    || '',
+    employee: currentEmployee.name, employeeRole: currentEmployee.role,
+    status:   forceStatus || document.getElementById('f-status').value,
+    priority: document.getElementById('f-priority').value,
+    timestamp: ts,
+  });
+  saveObjects(objects);
+  updateStats(); clearForm();
+  showToast(`✅ Objeto "${name}" cadastrado com sucesso!`);
+  showView('meus');
+}
+
+/* ----- CARDS ----- */
+function buildCard(obj) {
+  const emoji    = EMOJI_MAP[obj.cat] || '📦';
+  const color    = COLOR_MAP[obj.type] || '#3B5BDB';
+  const isLost   = obj.type === 'Perdido';
+  const initials = obj.employee ? obj.employee.split(' ').map(n=>n[0]).join('').substring(0,2) : '?';
+  return `
+  <div class="obj-card" onclick="openDetail(${obj.id})">
+    <div class="obj-thumb" style="background:linear-gradient(135deg,${color}18,${color}30)">
+      <div class="obj-thumb-bg" style="background:${color};opacity:.06"></div>
+      <span class="obj-thumb-emoji">${emoji}</span>
+      <span class="obj-type-badge ${isLost?'badge-lost':'badge-found'}">${isLost?'😢 Perdido':'😊 Encontrado'}</span>
+      ${obj.priority==='alta'?'<span class="obj-priority">🔴 Urgente</span>':''}
+    </div>
+    <div class="obj-body">
+      <h3>${obj.name}</h3>
+      <div class="obj-meta">
+        <span>📂 ${obj.cat}</span>
+        <span>📍 ${obj.location.split(',')[0]}</span>
+        <span>📅 ${obj.date}</span>
+      </div>
+      <div class="obj-tags">${obj.tags.slice(0,3).map(t=>`<span class="obj-tag">${t}</span>`).join('')}</div>
+    </div>
+    <div class="obj-footer">
+      <div class="obj-employee">
+        <div class="obj-emp-av">${initials}</div>
+        <span>${obj.employee||'—'}</span>
+      </div>
+      <span class="status-pill status-${obj.status}">${STATUS_LABEL[obj.status]||obj.status}</span>
+    </div>
+  </div>`;
+}
+
+/* ----- LISTAS ----- */
+function renderAllList() {
+  const search = (document.getElementById('search-all')?.value||'').toLowerCase();
+  const type   = document.getElementById('fil-type')?.value  ||'';
+  const cat    = document.getElementById('fil-cat')?.value   ||'';
+  const status = document.getElementById('fil-status')?.value||'';
+  const filtered = objects.filter(o => {
+    const mS = !search || o.name.toLowerCase().includes(search) || o.location.toLowerCase().includes(search)
+                       || (o.requester||'').toLowerCase().includes(search) || (o.employee||'').toLowerCase().includes(search);
+    return mS && (!type||o.type===type) && (!cat||o.cat===cat) && (!status||o.status===status);
+  });
+  const grid  = document.getElementById('list-all-grid');
+  const empty = document.getElementById('list-empty');
+  document.getElementById('all-count-label').textContent = `${filtered.length} registro${filtered.length!==1?'s':''} encontrado${filtered.length!==1?'s':''}`;
+  if (!filtered.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  grid.innerHTML = filtered.map(buildCard).join('');
+}
+
+function clearListFilters() {
+  ['search-all','fil-type','fil-cat','fil-status'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderAllList();
+}
+
+function renderMyList() {
+  const mine  = currentEmployee ? objects.filter(o=>o.employee===currentEmployee.name) : [];
+  const grid  = document.getElementById('list-my-grid');
+  const empty = document.getElementById('my-empty');
+  document.getElementById('my-count-label').textContent = `${mine.length} registro${mine.length!==1?'s':''}`;
+  if (!mine.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  grid.innerHTML = mine.map(buildCard).join('');
+}
+
+/* ----- STATS ----- */
+function updateStats() {
+  const total    = objects.length;
+  const lost     = objects.filter(o=>o.type==='Perdido').length;
+  const found    = objects.filter(o=>o.type==='Encontrado').length;
+  const resolved = objects.filter(o=>o.status==='resolvido').length;
+  const pending  = objects.filter(o=>o.status==='pendente').length;
+  document.getElementById('stat-total').textContent    = total;
+  document.getElementById('stat-lost').textContent     = lost;
+  document.getElementById('stat-found').textContent    = found;
+  document.getElementById('stat-resolved').textContent = resolved;
+  document.getElementById('stat-pending').textContent  = pending;
+  document.getElementById('list-count').textContent    = total;
+  document.getElementById('my-count').textContent      = currentEmployee ? objects.filter(o=>o.employee===currentEmployee.name).length : 0;
+}
+
+/* ----- MODAL DE DETALHES ----- */
+function openDetail(id) {
+  const obj = objects.find(o=>o.id===id);
+  if (!obj) return;
+  currentItemId = id;
+  const isLost = obj.type==='Perdido';
+  document.getElementById('dc-type-badge').innerHTML = `<span class="status-pill ${isLost?'badge-lost':'badge-found'}">${isLost?'😢 Perdido':'😊 Encontrado'}</span>`;
+  document.getElementById('dc-title').textContent = obj.name;
+  document.getElementById('dc-status-sel').value  = obj.status;
+  document.getElementById('dc-body').innerHTML = `
+    <div class="dc-grid">
+      <div class="dc-field"><label>Categoria</label><span>${EMOJI_MAP[obj.cat]||'📦'} ${obj.cat}</span></div>
+      <div class="dc-field"><label>Status</label><span class="status-pill status-${obj.status}">${STATUS_LABEL[obj.status]}</span></div>
+      <div class="dc-field"><label>Prioridade</label><span>${PRIORITY_LABEL[obj.priority]||'—'}</span></div>
+      <div class="dc-field"><label>Cor / Marca</label><span>${obj.color} / ${obj.brand}</span></div>
+      <div class="dc-field"><label>Estado</label><span>${obj.condition}</span></div>
+      <div class="dc-field"><label>Data / Hora</label><span>📅 ${obj.date} ${obj.time!=='—'?'· '+obj.time:''}</span></div>
+      <div class="dc-field full"><label>Local</label><span>📍 ${obj.location}${obj.ref!=='—'?' — '+obj.ref:''}</span></div>
+      <div class="dc-field full" style="padding:12px 14px;border-radius:10px;background:var(--bg-alt);border:1.5px solid var(--border)">
+        <label>Solicitante</label>
+        <span style="font-size:.95rem;font-weight:700;display:block;margin-top:3px">${obj.requester}</span>
+        <span style="font-size:.82rem;color:var(--muted);display:block">📞 ${obj.phone}${obj.email!=='—'?' &nbsp;·&nbsp; ✉️ '+obj.email:''}</span>
+        ${obj.cpf!=='—'?`<span style="font-size:.78rem;color:var(--muted)">CPF: ${obj.cpf}</span>`:''}
+      </div>
+      <div class="dc-field full"><label>Descrição</label><span style="line-height:1.65">${obj.desc}</span></div>
+      ${obj.obs?`<div class="dc-field full"><label>Obs. internas</label><span style="color:var(--muted);font-style:italic">${obj.obs}</span></div>`:''}
+      <div class="dc-field"><label>Funcionário</label><span>👤 ${obj.employee} — ${obj.employeeRole}</span></div>
+      <div class="dc-field"><label>Cadastrado em</label><span>🕐 ${obj.timestamp}</span></div>
+      ${obj.tags.length?`<div class="dc-field full"><label>Tags</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${obj.tags.map(t=>`<span class="obj-tag">${t}</span>`).join('')}</div></div>`:''}
+    </div>`;
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function closeDetail()         { document.getElementById('detail-overlay').classList.remove('open'); currentItemId=null; }
+function closeDetailOverlay(e) { if(e.target===document.getElementById('detail-overlay')) closeDetail(); }
+
+function updateStatus(val) {
+  if (!currentItemId) return;
+  const obj = objects.find(o=>o.id===currentItemId);
+  if (!obj) return;
+  obj.status = val; saveObjects(objects); updateStats(); renderAllList(); renderMyList();
+  showToast(`✅ Status atualizado: ${STATUS_LABEL[val]}`);
+}
+
+function deleteCurrentItem() {
+  if (!currentItemId) return;
+  const obj = objects.find(o=>o.id===currentItemId);
+  if (!obj||!confirm(`Excluir "${obj.name}"? Esta ação não pode ser desfeita.`)) return;
+  objects = objects.filter(o=>o.id!==currentItemId);
+  saveObjects(objects); closeDetail(); updateStats(); renderAllList(); renderMyList();
+  showToast('🗑️ Registro excluído.');
+}
+
+/* ----- TOAST ----- */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+/* ----- INIT ----- */
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(THEME_KEY);
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  const n = new Date();
+  document.getElementById('f-timestamp').value =
+    `${String(n.getDate()).padStart(2,'0')}/${String(n.getMonth()+1).padStart(2,'0')}/${n.getFullYear()} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+
+  setType('Perdido');
+  updateStats();
+
+  setInterval(() => {
+    const now = new Date();
+    const ts  = document.getElementById('f-timestamp');
+    if (ts) ts.value = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }, 60000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Localiza Aê — Painel do Funcionário</title>
+
+  <!-- Mesmas fontes do site -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Design base do site (variáveis, botões, tags, modais, toast, tema) -->
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Estilos exclusivos do painel (layout sidebar + cards de objeto) -->
+  <link rel="stylesheet" href="admin-panel.css"/>
+</head>
+<body>
+
+<!-- ==================================================
+     TOPBAR  (usa .nav-bg, .nav-border, .shadow do site)
+================================================== -->
+<header class="ap-topbar">
+
+  <div class="ap-topbar-left">
+    <!-- Logo idêntico ao site -->
+    <a class="ap-logo" href="index.html" title="Voltar ao site">
+      <img src="localizae-removebg-preview.png" alt="Localiza Aê"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+      <div class="ap-logo-fallback" style="display:none">
+        <span style="font-size:1.4rem">📍</span>
+        <span class="ap-logo-text">Localiza Aê</span>
+      </div>
+    </a>
+    <div class="ap-divider"></div>
+    <span class="ap-page-label">Painel do Funcionário</span>
+  </div>
+
+  <div class="ap-topbar-right">
+    <!-- Chip do funcionário (usa .hero-badge visual) -->
+    <div class="ap-employee">
+      <div class="ap-emp-avatar" id="emp-avatar">?</div>
+      <div class="ap-emp-info">
+        <strong id="emp-name-display">Nenhum selecionado</strong>
+        <span   id="emp-role-display">—</span>
+      </div>
+    </div>
+
+    <!-- Toggle de tema — componente idêntico ao site (classes .theme-toggle) -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Modo claro / escuro" aria-label="Alternar tema">
+      <span class="t-knob">
+        <span class="t-icon-sun">☀️</span>
+        <span class="t-icon-moon">🌙</span>
+      </span>
+    </button>
+
+    <!-- Botão padrão do site -->
+    <a href="index.html" class="btn btn-ghost" style="padding:9px 20px;font-size:.85rem">← Ver site</a>
+  </div>
+</header>
+
+
+<!-- ==================================================
+     LAYOUT PRINCIPAL
+================================================== -->
+<div class="ap-layout">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="ap-sidebar">
+
+    <!-- Card do funcionário (gradiente do site) -->
+    <div class="emp-card">
+      <div class="emp-avatar-lg" id="emp-avatar-lg">?</div>
+      <div class="emp-card-info">
+        <strong id="emp-card-name">Selecionar</strong>
+        <span   id="emp-card-role">funcionário</span>
+      </div>
+    </div>
+
+    <!-- Seletor de funcionário -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Funcionário ativo</div>
+      <select class="ap-select" id="employee-select" onchange="selectEmployee(this.value)">
+        <option value="">— Selecione —</option>
+        <option value="Ana Lima|Recepcionista">Ana Lima — Recepcionista</option>
+        <option value="Bruno Costa|Atendente">Bruno Costa — Atendente</option>
+        <option value="Carla Souza|Supervisora">Carla Souza — Supervisora</option>
+        <option value="Diego Ferreira|Atendente">Diego Ferreira — Atendente</option>
+        <option value="Elisa Martins|Coordenadora">Elisa Martins — Coordenadora</option>
+      </select>
+    </div>
+
+    <!-- Navegação -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu</div>
+      <nav class="ap-nav">
+        <button class="ap-nav-item active" id="nav-cadastro" onclick="showView('cadastro')">
+          <span>📝</span> Cadastrar Objeto
+        </button>
+        <button class="ap-nav-item" id="nav-lista" onclick="showView('lista')">
+          <span>📦</span> Todos os Objetos
+          <span class="ap-nav-count" id="list-count">0</span>
+        </button>
+        <button class="ap-nav-item" id="nav-meus" onclick="showView('meus')">
+          <span>👤</span> Meus Cadastros
+          <span class="ap-nav-count" id="my-count">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Resumo — usa as cores semânticas do site -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resumo geral</div>
+      <div class="sidebar-stats">
+        <div class="ss-row"><span>Total</span><strong id="stat-total">0</strong></div>
+        <div class="ss-row"><span>Perdidos</span>   <strong id="stat-lost"     style="color:var(--danger)">0</strong></div>
+        <div class="ss-row"><span>Encontrados</span><strong id="stat-found"    style="color:var(--success)">0</strong></div>
+        <div class="ss-row"><span>Resolvidos</span> <strong id="stat-resolved" style="color:var(--purple)">0</strong></div>
+        <div class="ss-row"><span>Pendentes</span>  <strong id="stat-pending"  style="color:var(--warning)">0</strong></div>
+      </div>
+    </div>
+
+  </aside><!-- /sidebar -->
+
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main class="ap-main">
+
+    <!-- ================================================
+         VIEW 1 — CADASTRAR OBJETO
+    ================================================ -->
+    <div id="view-cadastro" class="ap-view">
+
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Cadastrar Objeto</h2>
+          <p class="view-sub">Preencha as informações do objeto perdido ou encontrado</p>
+        </div>
+        <!-- Badge do funcionário (visual .hero-badge do site) -->
+        <div class="employee-badge" id="form-employee-badge">
+          <span>👤</span>
+          <span id="form-emp-name">Nenhum funcionário selecionado</span>
+        </div>
+      </div>
+
+      <!-- CARD DO FORMULÁRIO -->
+      <div class="form-card">
+
+        <!-- ETAPA 1 — TIPO -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="fs-icon s1">1</span>
+            Tipo de Registro
+          </h3>
+          <div class="type-selector">
+            <label class="type-opt sel-lost" id="opt-lost">
+              <input type="radio" name="tipo" value="Perdido" checked onchange="setType('Perdido')"/>
+              <div class="type-opt-inner">
+                <span class="type-emoji">😢</span>
+                <strong>Objeto Perdido</strong>
+                <p>Alguém perdeu este objeto</p>
+              </div>
+            </label>
+            <label class="type-opt" id="opt-found">
+              <input type="radio" name="tipo" value="Encontrado" onchange="setType('Encontrado')"/>
+              <div class="type-opt-inner">
+                <span class="type-emoji">😊</span>
+                <strong>Objeto Encontrado</strong>
+                <p>Este objeto foi achado</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- ETAPA 2 — IDENTIFICAÇÃO -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="fs-icon s2">2</span>
+            Identificação do Objeto
+          </h3>
+          <div class="form-grid">
+
+            <div class="form-group full">
+              <label>Nome do objeto <span class="req">*</span></label>
+              <input id="f-name" class="form-input" type="text" placeholder="Ex: Carteira preta de couro com zíper dourado"/>
+            </div>
+
+            <div class="form-group">
+              <label>Categoria <span class="req">*</span></label>
+              <select id="f-cat" class="form-input">
+                <option value="">Selecione...</option>
+                <option value="Documentos">🪪 Documentos</option>
+                <option value="Eletrônicos">📱 Eletrônicos</option>
+                <option value="Chaves">🔑 Chaves</option>
+                <option value="Carteiras">👛 Carteiras</option>
+                <option value="Roupas">👕 Roupas</option>
+                <option value="Animais">🐾 Animais</option>
+                <option value="Bolsas">👜 Bolsas</option>
+                <option value="Joias">💍 Joias</option>
+                <option value="Outros">📦 Outros</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Cor principal</label>
+              <input id="f-color" class="form-input" type="text" placeholder="Ex: Preto, Azul, Vermelho..."/>
+            </div>
+
+            <div class="form-group">
+              <label>Marca / Modelo</label>
+              <input id="f-brand" class="form-input" type="text" placeholder="Ex: Samsung, Nike, Sem marca..."/>
+            </div>
+
+            <div class="form-group">
+              <label>Estado de conservação</label>
+              <select id="f-condition" class="form-input">
+                <option value="Bom">✅ Bom estado</option>
+                <option value="Regular">⚠️ Estado regular</option>
+                <option value="Danificado">❌ Danificado</option>
+              </select>
+            </div>
+
+            <div class="form-group full">
+              <label>Tags / Palavras-chave</label>
+              <input id="f-tags" class="form-input" type="text" placeholder="Ex: couro, zíper dourado, RG (separe por vírgula)"/>
+              <span class="form-hint">Facilita a busca pelo objeto na plataforma</span>
+            </div>
+
+            <div class="form-group full">
+              <label>Descrição detalhada <span class="req">*</span></label>
+              <textarea id="f-desc" class="form-input" rows="4"
+                placeholder="Descreva o objeto com o máximo de detalhes: características únicas, conteúdo, sinais de identificação..."></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ETAPA 3 — LOCAL E DATA -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="fs-icon s3">3</span>
+            Local e Data
+          </h3>
+          <div class="form-grid">
+
+            <div class="form-group full">
+              <label>Local onde foi <span id="local-label">perdido</span> <span class="req">*</span></label>
+              <input id="f-location" class="form-input" type="text" placeholder="Ex: Shopping Barra, Salvador - BA / Rua das Flores, 123"/>
+            </div>
+
+            <div class="form-group">
+              <label>Ponto de referência</label>
+              <input id="f-ref" class="form-input" type="text" placeholder="Ex: Perto da entrada principal, 2º andar..."/>
+            </div>
+
+            <div class="form-group">
+              <label>Cidade / UF</label>
+              <input id="f-city" class="form-input" type="text" placeholder="Ex: Salvador - BA"/>
+            </div>
+
+            <div class="form-group">
+              <label>Data <span class="req">*</span></label>
+              <input id="f-date" class="form-input" type="date"/>
+            </div>
+
+            <div class="form-group">
+              <label>Horário aproximado</label>
+              <input id="f-time" class="form-input" type="time"/>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ETAPA 4 — SOLICITANTE -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="fs-icon s4">4</span>
+            Dados do Solicitante
+          </h3>
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Nome completo <span class="req">*</span></label>
+              <input id="f-requester" class="form-input" type="text" placeholder="Nome de quem está solicitando"/>
+            </div>
+
+            <div class="form-group">
+              <label>CPF / Documento</label>
+              <input id="f-cpf" class="form-input" type="text" placeholder="000.000.000-00"/>
+            </div>
+
+            <div class="form-group">
+              <label>Telefone / WhatsApp <span class="req">*</span></label>
+              <input id="f-phone" class="form-input" type="tel" placeholder="(71) 99999-9999"/>
+            </div>
+
+            <div class="form-group">
+              <label>E-mail</label>
+              <input id="f-email" class="form-input" type="email" placeholder="email@exemplo.com"/>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ETAPA 5 — STATUS E FUNCIONÁRIO -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="fs-icon s5">5</span>
+            Status e Responsável
+          </h3>
+          <div class="form-grid">
+
+            <div class="form-group">
+              <label>Status inicial <span class="req">*</span></label>
+              <select id="f-status" class="form-input">
+                <option value="pendente">⏳ Pendente — aguardando análise</option>
+                <option value="ativo" selected>✔️ Ativo — em busca</option>
+                <option value="em_analise">🔍 Em análise</option>
+                <option value="resolvido">✅ Resolvido — devolvido</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Prioridade</label>
+              <select id="f-priority" class="form-input">
+                <option value="normal">🟡 Normal</option>
+                <option value="alta">🔴 Alta</option>
+                <option value="baixa">🟢 Baixa</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Funcionário responsável</label>
+              <input id="f-employee" class="form-input" type="text" readonly
+                placeholder="Selecione o funcionário no menu lateral"/>
+            </div>
+
+            <div class="form-group">
+              <label>Data e hora do cadastro</label>
+              <input id="f-timestamp" class="form-input" type="text" readonly/>
+            </div>
+
+            <div class="form-group full">
+              <label>Observações internas</label>
+              <textarea id="f-obs" class="form-input" rows="3"
+                placeholder="Informações adicionais apenas para a equipe — não visível ao público..."></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- AÇÕES DO FORMULÁRIO — usa .btn do site -->
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="clearForm()" type="button">
+            🗑️ Limpar formulário
+          </button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn"
+              style="background:var(--warning);color:#fff;box-shadow:0 4px 14px rgba(245,158,11,.3)"
+              onclick="saveForm('pendente')" type="button">
+              ⏳ Salvar como Pendente
+            </button>
+            <button class="btn btn-primary" onclick="saveForm(null)" type="button">
+              💾 Cadastrar Objeto
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /form-card -->
+    </div><!-- /view-cadastro -->
+
+
+    <!-- ================================================
+         VIEW 2 — TODOS OS OBJETOS
+    ================================================ -->
+    <div id="view-lista" class="ap-view" style="display:none">
+
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Todos os Objetos</h2>
+          <p class="view-sub">Registros de toda a equipe na plataforma</p>
+        </div>
+        <button class="btn btn-primary" onclick="showView('cadastro')">+ Novo Cadastro</button>
+      </div>
+
+      <!-- Filtros — usa .search-field + .ap-select do painel -->
+      <div class="list-filters">
+        <div class="search-field">
+          <span>🔍</span>
+          <input type="text" id="search-all"
+            placeholder="Buscar por nome, local, solicitante, funcionário..."
+            oninput="renderAllList()"/>
+        </div>
+        <select class="ap-select sm" id="fil-type" onchange="renderAllList()">
+          <option value="">Todos os tipos</option>
+          <option value="Perdido">😢 Perdidos</option>
+          <option value="Encontrado">😊 Encontrados</option>
+        </select>
+        <select class="ap-select sm" id="fil-cat" onchange="renderAllList()">
+          <option value="">Todas categorias</option>
+          <option>Documentos</option><option>Eletrônicos</option>
+          <option>Chaves</option><option>Carteiras</option>
+          <option>Roupas</option><option>Animais</option>
+          <option>Bolsas</option><option>Joias</option><option>Outros</option>
+        </select>
+        <select class="ap-select sm" id="fil-status" onchange="renderAllList()">
+          <option value="">Todos os status</option>
+          <option value="pendente">⏳ Pendente</option>
+          <option value="ativo">✔️ Ativo</option>
+          <option value="em_analise">🔍 Em análise</option>
+          <option value="resolvido">✅ Resolvido</option>
+        </select>
+        <button class="btn btn-ghost" style="padding:9px 16px;font-size:.83rem" onclick="clearListFilters()">
+          ✕ Limpar
+        </button>
+      </div>
+
+      <p class="objects-count" id="all-count-label">0 registros encontrados</p>
+      <div class="objects-grid" id="list-all-grid"></div>
+      <div class="empty-state" id="list-empty" style="display:none">
+        <div style="font-size:3.5rem;margin-bottom:12px">📭</div>
+        <h3>Nenhum objeto encontrado</h3>
+        <p>Ajuste os filtros ou cadastre um novo objeto.</p>
+        <button class="btn btn-primary" onclick="showView('cadastro')" style="margin-top:18px">
+          + Cadastrar Objeto
+        </button>
+      </div>
+
+    </div><!-- /view-lista -->
+
+
+    <!-- ================================================
+         VIEW 3 — MEUS CADASTROS
+    ================================================ -->
+    <div id="view-meus" class="ap-view" style="display:none">
+
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Meus Cadastros</h2>
+          <p class="view-sub" id="my-sub">Selecione um funcionário no menu lateral</p>
+        </div>
+        <button class="btn btn-primary" onclick="showView('cadastro')">+ Novo Cadastro</button>
+      </div>
+
+      <p class="objects-count" id="my-count-label">0 registros</p>
+      <div class="objects-grid" id="list-my-grid"></div>
+      <div class="empty-state" id="my-empty" style="display:none">
+        <div style="font-size:3.5rem;margin-bottom:12px">👤</div>
+        <h3>Nenhum cadastro ainda</h3>
+        <p>Selecione um funcionário ou cadastre um novo objeto.</p>
+        <button class="btn btn-primary" onclick="showView('cadastro')" style="margin-top:18px">
+          + Cadastrar Objeto
+        </button>
+      </div>
+
+    </div><!-- /view-meus -->
+
+  </main>
+</div><!-- /ap-layout -->
+
+
+<!-- ==================================================
+     MODAL DE DETALHES (usa .modal-overlay do site)
+================================================== -->
+<div class="modal-overlay" id="detail-overlay" onclick="closeDetailOverlay(event)">
+  <div class="detail-card">
+
+    <div class="dc-header">
+      <div>
+        <div class="dc-type-badge" id="dc-type-badge"></div>
+        <h2 class="dc-title" id="dc-title">—</h2>
+      </div>
+      <button class="dc-close" onclick="closeDetail()">✕</button>
+    </div>
+
+    <div class="dc-body" id="dc-body"></div>
+
+    <div class="dc-footer">
+      <div class="dc-status-wrap">
+        <label>Atualizar status:</label>
+        <!-- usa .ap-select do painel -->
+        <select class="ap-select sm" id="dc-status-sel" onchange="updateStatus(this.value)">
+          <option value="pendente">⏳ Pendente</option>
+          <option value="ativo">✔️ Ativo</option>
+          <option value="em_analise">🔍 Em análise</option>
+          <option value="resolvido">✅ Resolvido</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="padding:9px 18px;font-size:.85rem" onclick="closeDetail()">
+          Fechar
+        </button>
+        <button class="btn"
+          style="background:var(--danger);color:#fff;padding:9px 18px;font-size:.85rem;box-shadow:0 4px 12px rgba(239,68,68,.3)"
+          onclick="deleteCurrentItem()">
+          🗑️ Excluir
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast — usa a classe .toast do site (declarada em styles.css) -->
+<div class="toast" id="toast"></div>
+
+<script src="admin-panel.js"></script>
+</body>
+</html>
